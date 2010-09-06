@@ -1,3 +1,0 @@
-<?xml version="1.0"?>
-<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
-<metadata xml:lang="en"><Esri><MetaID>{792CEE61-3568-4FAC-B6EB-07B811CDA8AD}</MetaID><CreaDate>20100906</CreaDate><CreaTime>22452600</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files\ArcGIS\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\Con" Date="20100906" Time="224527">Con M:\Andriy\new_run\scripts_new_improved\tmp\tmp1 M:\Andriy\new_run\scripts_new_improved\tmp\cl_a_min M:\Andriy\new_run\scripts_new_improved\test_results_to_be_deleted\resLevel_0 # "afr_mark_h32n &gt; 0 AND afr_mark_h32n &gt;= TMP2"</Process></lineage></DataProperties></Esri></metadata>
