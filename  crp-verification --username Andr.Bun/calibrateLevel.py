@@ -6,7 +6,7 @@ import arcgisscripting, time
 
 from processLevel import processLevel
 
-def calibrateLevel(paramsStruct, pathsAndUtilities, minMaxClass, level):
+def calibrateLevel(paramsStruct, pathsAndUtilities, minMaxClass, level, gui):
     gp = arcgisscripting.create()
     gp.CheckOutExtension("Spatial")
     gp.OverWriteOutput = 1 # allow overwriting rasters:
@@ -30,9 +30,8 @@ def calibrateLevel(paramsStruct, pathsAndUtilities, minMaxClass, level):
     OutRaster2 = tmp.OutRaster2
     OutRaster3 = tmp.OutRaster3
 
-    #===============================================================================
     # preparing zones + calibrated areas
-    #===============================================================================
+    gui.printText('Preparing zones and calibrated areas')
     # selecting only those areas, with values
     gp.Con_sa(statisticsLevel2, statisticsLevel2, areaUnits, "#", "VALUE > 0")
     gp.BuildRasterAttributeTable_management(areaUnits,"OVERWRITE")
@@ -85,17 +84,14 @@ def calibrateLevel(paramsStruct, pathsAndUtilities, minMaxClass, level):
     gp.Int_sa(OutRaster2,differ)
     gp.BuildRasterAttributeTable_management(differ,"OVERWRITE")
     cursor=gp.SearchCursor(differ)
-    print cursor
     if cursor:
         # Processing calibrated raster:
+        gui.printText('Processing calibrated areas for level ' + str(level))
         processLevel(paramsStruct, pathsAndUtilities, minMaxClass, differName,
                      outputs.resultForCalibratedLevel[level])
 
-    #===============================================================================
     # combining final map
-    #===============================================================================
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Combining final map...'
-
+    gui.printText('Combining final map for level ' + str(level))
     gp.Con_sa(zones, outputs.resultLevel[level-1], OutRaster1, "#", "VALUE = 0")
     gp.Con_sa(zones, outputs.resultLevel[level], OutRaster2, OutRaster1, "VALUE = 1")
     gp.Con_sa(zones, outputs.resultForCalibratedLevel[level], outputs.combinedResult[level], OutRaster2, "VALUE = -1")

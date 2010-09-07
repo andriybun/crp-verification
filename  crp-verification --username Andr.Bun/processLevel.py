@@ -2,11 +2,11 @@
 # Author: Andriy Bun
 # Name:   Process level function
 
-import arcgisscripting, time
+import arcgisscripting
 
 from iterableStruct import iterableStruct
 
-def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result):
+def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result, gui):
     gp = arcgisscripting.create()
     gp.CheckOutExtension("Spatial")
     gp.OverWriteOutput = 1 # allow overwriting rasters:
@@ -30,7 +30,7 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
     inputs.cell_area = cell_area
     inputs.statLayer = statLayer
 
-    pathsAndUtilities.verifyRasters(inputs)
+    pathsAndUtilities.verifyRasters(inputs, gui)
 
     # some temporary rasters, used for calculations
     cell_area_min = tmp.cell_area_min
@@ -42,7 +42,7 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
     #===============================================================================
     # calculations
     #===============================================================================
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Preparing inputs'
+    gui.printTextTime('Preparing inputs')
     gp.ResetEnvironments()
     gp.Int_sa(units, combined)
     gp.BuildRasterAttributeTable_management(combined,"OVERWRITE")
@@ -50,12 +50,11 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
     gp.Float_sa(statLayer, OutRaster2)
     gp.Divide_sa(OutRaster2, 100, OutRaster1)
     gp.Times_sa(OutRaster1, cell_area, cell_area_min)
-    print '********************** Stage 1. Preparing national areas: **********************'
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Calculations started...'
+    gui.printTextTime('Stage 1. Preparing national areas')
+
     # loop by all the indeces within the range (minClass, maxClass) in reverse order
     for i in range(maxClass, minClass - 1, -1):
         # raster containing the result of calculations for current index
-        print '.... processing #' + str(i)
         OutRaster = OutClass + str(i)
         # selecting only cells with the values that correspond to current index
         gp.Con_sa(mark_high32, cell_area_min, OutRaster1, 0, "VALUE = " + str(i))
@@ -63,16 +62,14 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
         gp.ZonalStatistics_sa(units, "Value", OutRaster1, OutRaster2, "SUM", "DATA")
         # creating a combined raster of 
         gp.Combine_sa("\'" + units + "\';\'" + OutRaster2 + "\'", OutRaster)
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Finished!'
+        gui.setProgress((maxClass - i) / (maxClass - minClass ) * 100)
+
+    gui.printTextTime('Finished')
 
     gp.BuildRasterAttributeTable_management(combined,"OVERWRITE")
 
-#    gp.addfield (combined,"CLsysEST_SUM","LONG", "#", "#", "#", "#", "NULLABLE", "REQUIRED", "#")
-#    gp.addfield (combined,"CLOSEST_CLASS","LONG", "#", "#", "#", "#", "NULLABLE", "REQUIRED", "#")
-
-    print '********************** Stage 2. Creating combined raster: **********************'
+    gui.printText('Stage 2. Creating combined raster')
     for i in range(maxClass, minClass - 1, -1):
-#        print '.... processing #' + str(i)
         OutRaster = OutClass + str(i)
         # Adding a new field for the result:
         gp.addfield (combined,"CLASS_" + str(i),"LONG", "#", "#", "#", "#", "NULLABLE", "REQUIRED", "#")
@@ -94,9 +91,11 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
         del rowsCombined
         del rowsClasses
         gp.delete_management(OutRaster)
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Finished!'
+        gui.setProgress((maxClass - i) / (maxClass - minClass ) * 100)
+        
+    gui.printTextTime('Finished')
 
-    print '********************* Stage 3. Processing combined raster: *********************'
+    gui.printText('Stage 3. Processing combined raster')
 
     count = []
     croplandClasses = []
@@ -119,7 +118,6 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
     resIDs = []
 
     for i in range(0, len(count)):
-    #    print str(i) + "\t" + str(count[i]) + "\t" + str(len(croplandClasses[i]))
         natSum = 0
         resSum = 0
         resIndex = 29
@@ -134,9 +132,9 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
         resSums.append(resSum)
         resIDs.append(resIndex)
 
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Finished!'
+    gui.printTextTime('Finished')
 
-    print '****************** Stage 4. Altering combined attribute table: *****************'
+    gui.printText('Stage 4. Altering combined attribute table')
 
     gp.BuildRasterAttributeTable_management(combined,"OVERWRITE")
 
@@ -161,21 +159,19 @@ def processLevel(paramsStruct, pathsAndUtilities, minMaxClass, unitsName, result
     del row
     del rows
 
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Finished!'
+    gui.printTextTime('Finished')
 
-    print '************************ Stage 5. Compiling final raster: **********************'
+    gui.printText('Stage 5. Compiling final raster')
 
     gp.Con_sa(mark_high32, "0", OutRaster2, "#", "VALUE >= 0")
 
     for i in range(maxClass, minClass - 1, -1):
-#        print '.... processing #' + str(i)
         gp.Con_sa(combined, i, OutRaster1, OutRaster2, "CLOSEST_CLASS = " + str(i))
         gp.CopyRaster_management(OutRaster1, OutRaster2)
+        gui.setProgress((maxClass - i) / (maxClass - minClass ) * 100)
 
     gp.Combine_sa("\'" + mark_high32 + "\';\'" + OutRaster2 + "\'", OutRaster1)
 
     gp.Con_sa(OutRaster1, cell_area_min, result, "#", mark_high32name + " > 0 AND " + mark_high32name + " >= TMP2")
 
-#    print time.strftime("%H:%M:%S", time.localtime()) + ' Finished!'
-
-    print time.strftime("%H:%M:%S", time.localtime()) + ' Done...'
+    gui.printTextTime('Done')

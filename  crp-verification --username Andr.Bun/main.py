@@ -3,7 +3,7 @@
 # Modified: 19/08/2010
 # Name:     Comparison of global cropland cover
 
-import time, sys
+import time
 from iterableStruct import iterableStruct
 from utils import utils
 from processLevel import processLevel
