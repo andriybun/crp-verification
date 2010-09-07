@@ -13,7 +13,7 @@ class utils:
     tmp = iterableStruct()
 
     # constructor
-    def __init__(self):
+    def __init__(self, gui):
         # initialize arcgisscripting object
         self.gp = arcgisscripting.create()
         self.gp.CheckOutExtension("Spatial")
@@ -27,7 +27,7 @@ class utils:
         self.outputs = rasterNames.outputs
         self.tmp = rasterNames.tmp
         # verify if rasters exist
-        self.verifyRasters(self.inputsNotClipped)
+        self.verifyRasters(self.inputsNotClipped, gui)
 
     # define roots, parameters
     def initParams(self):
@@ -140,10 +140,12 @@ class utils:
         return output
 
     # verify if rasters exist
-    def verifyRasters(self, listOfRasters):
+    def verifyRasters(self, listOfRasters, gui):
         for rasterName in listOfRasters:
             if (not self.gp.Exists(rasterName)):
-                raise IOError('Raster does not exist: ' + rasterName)
+                gui.printText('Error: Raster does not exist: ' + rasterName);
+                return 1
+#                raise IOError('Raster does not exist: ' + rasterName)
 
     # clip an area from input raster and convert result to integer
     def clipRasterInt(self, inputRaster, outputRaster, coords):
