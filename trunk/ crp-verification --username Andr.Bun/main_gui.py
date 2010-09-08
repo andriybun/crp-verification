@@ -11,9 +11,6 @@ from gui.mainWindow import Ui_MainWindow
 from iterableStruct import iterableStruct
 from runAll import runAll
 
-print 'success'
-sys.exit()
-
 # main window class
 class mainWin(QtGui.QMainWindow):
     def __init__(self, parent=None):

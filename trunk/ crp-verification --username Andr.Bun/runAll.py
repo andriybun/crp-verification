@@ -12,8 +12,7 @@ from PyQt4 import QtGui, QtCore, Qt
 def runAll(gui):
     gui.printTextTime('Calculations started')
     # coordinates for clipping rasters:
-    coords = "6.5 45.4 7.5 46.5"
-    #coords = "-18 4 0 17"
+    coords = "-18 4 0 17"
     #coords = "-18 -35 52 38"
     
     # minimum and maximum classes of territory in "mark high"
