@@ -7,14 +7,16 @@ from iterableStruct import iterableStruct
 from utils import utils
 from processLevel import processLevel
 from calibrateLevel import calibrateLevel
-from PyQt4 import QtGui, QtCore, Qt
+#from PyQt4 import QtGui, QtCore, Qt
 
-def runAll(gui):
+def runAll(gui, dummy):
+    print 'runAll() yeah!!!'
     gui.printTextTime('Calculations started')
+    print 'passed printTextTime() yeah!!!'
     # coordinates for clipping rasters:
     coords = "-18 4 0 17"
     #coords = "-18 -35 52 38"
-    
+def dummy():    
     # minimum and maximum classes of territory in "mark high"
     minMaxClass = iterableStruct()
     minMaxClass.minClass = 1
@@ -37,7 +39,7 @@ def runAll(gui):
     pathsAndUtilities.clipRaster(inputsNotClipped.mark_high_32, inputsClipped.mark_high_32, coords)
     pathsAndUtilities.clipRaster(inputsNotClipped.cell_area, inputsClipped.cell_area, coords)
     pathsAndUtilities.clipRaster(inputsNotClipped.statLayer, inputsClipped.statLayer, coords)
-    
+
     # convert rasters to proper measurement units
     pathsAndUtilities.prepareRasters()
     
